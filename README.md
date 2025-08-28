@@ -1,13 +1,6 @@
-# Synthetic Data Bulk Editor
+# Bulk Synthetic Data Editor
 
-This is a tool that i have built to help me with my work. It is a tool that allows me to import JSONL data from a file, generate synthetic data using AI, check for similarity between pairs of messages, and export data to a file.
-
-## Features
-
-- Import JSONL data from a file or generate synthetic data using AI
-- Check for similarity between pairs of messages
-- Export data to a file
-- Filter data by user or assistant
+This is a tool that i have built to help me with fine-tuning LLMs. It is a tool that allows me to import JSONL data from a file, generate synthetic data using AI, check for similarity between pairs of messages, and export data to a file.
 
 ## Usage
 1. clone the repository
