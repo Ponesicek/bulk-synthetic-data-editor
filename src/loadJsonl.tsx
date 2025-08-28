@@ -5,6 +5,9 @@ import { Textarea } from "./components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogFooter, AlertDialogDescription, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./components/ui/alert-dialog";
 import { generateObject } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
+import { DataTable } from "./components/data-table";
+import { useCallback, useMemo } from "react";
+import { getColumns } from "./components/column";
 
 const client = createOpenAI(
   {
@@ -33,6 +36,43 @@ export default function LoadJsonl({
 }) {
   const [jsonData, setJsonData] = useState<string>();
   const [prompt, setPrompt] = useState<string>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<z.infer<typeof JsonDataSchema> | undefined>(undefined);
+  const onEdit = useCallback(
+    (rowIndex: number, role: "user" | "assistant", value: string) => {
+      setResult((prev) => {
+        if (!prev) return prev;
+        const next = [...prev];
+        const item = { ...next[rowIndex] };
+        const messages = [...item.messages];
+        const idx = messages.findIndex((m) => m.role === role);
+        if (idx >= 0) {
+          messages[idx] = { ...messages[idx], content: value };
+        } else {
+          messages.push({ role, content: value });
+        }
+        item.messages = messages;
+        next[rowIndex] = item;
+        return next;
+      });
+    },
+    [],
+  );
+
+  const onDelete = useCallback(
+    (rowIndex: number) => {
+      setResult((prev) => {
+        if (!prev) return prev;
+        const next = [...prev];
+        next.splice(rowIndex, 1);
+        return next;
+      });
+    },
+    [],
+  );
+
+  const columns = useMemo(() => getColumns(onEdit, onDelete), [onEdit, onDelete]);
   return (
     <div className="flex flex-col items-center justify-center">
       <Textarea
@@ -52,11 +92,13 @@ export default function LoadJsonl({
           <AlertDialogTrigger asChild>
             <Button>Generate using AI</Button>
           </AlertDialogTrigger>
-          <AlertDialogContent>
+          <AlertDialogContent className="min-w-[1280px]">
             <AlertDialogHeader>
               <AlertDialogTitle>Generate using AI</AlertDialogTitle>
               <AlertDialogDescription>
                 <p className="text-sm text-gray-500 mb-2">You can generate data using AI, enter your prompt below.</p>
+                {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
+                {result ? <DataTable data={result} columns={columns} /> : 
                 <Textarea
                   rows={10}
                   cols={50}
@@ -65,16 +107,31 @@ export default function LoadJsonl({
                   onChange={(e) => {
                     setPrompt(e.target.value);
                   }}
-                />
+                />}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
+              {result ? <AlertDialogAction onClick={() => {
+                if (Jsonl) {
+                  setJsonl([...Jsonl, ...result]);
+                } else {
+                  setJsonl(result);
+                }
+                setResult(undefined);
+                setJsonData("");
+                setPrompt("");
+                setError(null);
+              }}>Add Data</AlertDialogAction> :
+              isLoading ? <AlertDialogAction disabled>Generating...</AlertDialogAction> :
               <AlertDialogAction
                 onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   if (prompt) {
+                    setIsLoading(true);
+                    setError(null);
+                    setResult(undefined);
                     const {object} = await generateObject({
                       model,
                       schema: z.object({
@@ -82,12 +139,17 @@ export default function LoadJsonl({
                       }),
                       prompt,
                     });
-                    console.log(JSON.stringify(object, null, 2));
+                    setResult(object.data);
+                    setIsLoading(false);
+                    setError(null);
+                  } else {
+                    setError("No prompt provided");
                   }
                 }}
-              >
-                Continue
-              </AlertDialogAction>
+                >
+                  Generate
+                </AlertDialogAction>
+              }
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
