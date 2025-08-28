@@ -1,5 +1,5 @@
 "use client";
-import { JsonDataSchema } from "@/loadJsonl";
+import { JsonDataSchema } from "../types";
 import { type ColumnDef } from "@tanstack/react-table";
 import z from "zod";
 import { XIcon } from "lucide-react";
