@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { parseTextToJsonl } from "../services/fileOperations";
 import type { JsonDataType } from "../types";
+import { FileOperations } from "./FileOperations";
+import { AiGenerationDialog } from "./AiGenerationDialog";
 
 interface TextInputProps {
   onAddData: (data: JsonDataType) => void;
@@ -25,7 +27,7 @@ export const TextInput = ({ onAddData }: TextInputProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center w-full">
       <Textarea
         rows={10}
         cols={50}
@@ -34,7 +36,11 @@ export const TextInput = ({ onAddData }: TextInputProps) => {
         onChange={(e) => setJsonData(e.target.value)}
         value={jsonData}
       />
-      <div className="flex flex-row gap-2 my-2 justify-end w-full">
+      <div className="flex flex-row gap-2 my-2 justify-between w-full">
+        <div className="flex flex-row gap-2">
+          <FileOperations onAddData={onAddData} />
+          <AiGenerationDialog onAddData={onAddData} />
+        </div>
         <Button onClick={handleAddData}>
           Add Data
         </Button>

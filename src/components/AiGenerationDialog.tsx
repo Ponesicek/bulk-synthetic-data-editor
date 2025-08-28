@@ -163,7 +163,10 @@ export const AiGenerationDialog = ({ onAddData }: AiGenerationDialogProps) => {
           ) : isLoading ? (
             <AlertDialogAction disabled>Generating...</AlertDialogAction>
           ) : (
-            <AlertDialogAction onClick={handleGenerate}>
+            <AlertDialogAction onClick={(e) => {
+              e.preventDefault();
+              handleGenerate();
+            }}>
               Generate
             </AlertDialogAction>
           )}
