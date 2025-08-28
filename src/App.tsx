@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import OpenAI from "openai";
+import { toast } from "sonner";
 const client = new OpenAI(
   {
     baseURL: "http://localhost:1234/v1",
@@ -111,7 +112,7 @@ function App() {
                 .filter((e) => e.content.trim().length > 0);
 
               if (entries.length < 2) {
-                alert("Need at least two user messages to compare.");
+                toast.error("Need at least two user messages to compare.");
                 return;
               }
 
@@ -151,10 +152,14 @@ function App() {
                 a: entries[bestI].content,
                 b: entries[bestJ].content,
               };
-              console.log("Most similar pair by cosine similarity:", result);
+              if (bestSim > 0.9) {
+                toast.error("Highly similar pair found:\n" + JSON.stringify(result.a) + " and " + JSON.stringify(result.b));
+              } else {
+                toast.success("No similar pair found (biggest similarity: " + bestSim + ").");
+              }
             } catch (err) {
               console.error(err);
-              alert("Failed to compute embeddings. See console for details.");
+              toast.error("Failed to compute embeddings. See console for details.");
             }
           }}>Check for similarity using embeddings</Button>
           <Button onClick={() => {

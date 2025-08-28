@@ -40,6 +40,7 @@ export default function LoadJsonl({
   const [result, setResult] = useState<z.infer<typeof JsonDataSchema> | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [modelString, setModelString] = useState<string>("openai/gpt-4o");
+  const [pairCount, setPairCount] = useState<number | undefined>(undefined);
   const parseFileContentToArray = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return [] as unknown[];
@@ -158,13 +159,25 @@ export default function LoadJsonl({
                 {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
                 {result ? <DataTable data={result} columns={columns} /> : 
                 <div className="flex flex-col gap-2">
+                <div className="flex flex-row gap-2">
                 <Input
                   placeholder="Model"
                   value={modelString}
+                  className="flex-[2]"
                   onChange={(e) => {
                     setModelString(e.target.value);
                   }}
                 />
+                <Input
+                  type="number"
+                  placeholder="Pair Count (passed to the model, can be wrong)"
+                  value={pairCount}
+                  className="flex-[1]"
+                  onChange={(e) => {
+                    setPairCount(parseInt(e.target.value));
+                  }}
+                />
+                </div>
                 <Textarea
                   rows={10}
                   cols={50}
@@ -206,6 +219,7 @@ export default function LoadJsonl({
                       schema: z.object({
                         data: JsonDataSchema,
                       }),
+                      system: "You are a synthetic data generator. You will be given a prompt and you will generate a list of messages. Generate " + pairCount + " pairs of messages.",
                       prompt,
                     });
                     setResult(object.data);
