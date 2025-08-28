@@ -157,7 +157,24 @@ function App() {
               alert("Failed to compute embeddings. See console for details.");
             }
           }}>Check for similarity using embeddings</Button>
-          <Button>Download</Button>
+          <Button onClick={() => {
+            try {
+              const lines = (jsonlData ?? []).map((item) => JSON.stringify(item));
+              const content = lines.join("\n");
+              const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "data.jsonl";
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            } catch (err) {
+              console.error(err);
+              alert("Failed to export JSONL.");
+            }
+          }}>Download</Button>
         </div>
       </div>
     </div>

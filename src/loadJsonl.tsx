@@ -4,18 +4,17 @@ import { Button } from "./components/ui/button";
 import { Textarea } from "./components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogFooter, AlertDialogDescription, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./components/ui/alert-dialog";
 import { generateObject } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createGateway } from "@ai-sdk/gateway";
 import { DataTable } from "./components/data-table";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { getColumns } from "./components/column";
+import { Input } from "./components/ui/input";
 
-const client = createOpenAI(
+const client = createGateway(
   {
-    //baseURL: "http://localhost:1234/v1",
     apiKey: "",
   }
 );
-const model = client("gpt-4o-2024-08-06")
 export const JsonDataSchema = z.array(
   z.object({
     messages: z.array(
@@ -23,7 +22,7 @@ export const JsonDataSchema = z.array(
         role: z.enum(["user", "assistant"]),
         content: z.string().min(2),
       }),
-    ),
+    ).max(2),
   }),
 );
 
@@ -39,6 +38,49 @@ export default function LoadJsonl({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<z.infer<typeof JsonDataSchema> | undefined>(undefined);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [modelString, setModelString] = useState<string>("openai/gpt-4o");
+  const parseFileContentToArray = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) return [] as unknown[];
+    try {
+      if (trimmed.startsWith("[")) {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed as unknown[];
+      }
+    } catch {
+      // fall through to JSONL parsing
+    }
+    return trimmed
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch (err) {
+          throw new Error(`Invalid JSON/JSONL line: ${line}`);
+        }
+      });
+  };
+
+  const onImportFile = async (file: File) => {
+    try {
+      const text = await file.text();
+      const raw = parseFileContentToArray(text);
+      const parsed = JsonDataSchema.parse(raw);
+      if (Jsonl) {
+        setJsonl([...Jsonl, ...parsed]);
+      } else {
+        setJsonl(parsed);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      alert("Failed to import file: " + message);
+    } finally {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
   const onEdit = useCallback(
     (rowIndex: number, role: "user" | "assistant", value: string) => {
       setResult((prev) => {
@@ -87,7 +129,23 @@ export default function LoadJsonl({
       />
       <div className="flex flex-row gap-2 my-2 justify-between w-full">
         <div className="flex flex-row gap-2">
-        <Button>Import from file</Button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".jsonl,.json,.ndjson,application/json,text/plain"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) onImportFile(file);
+          }}
+        />
+        <Button
+          onClick={() => {
+            fileInputRef.current?.click();
+          }}
+        >
+          Import from file
+        </Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button>Generate using AI</Button>
@@ -99,6 +157,14 @@ export default function LoadJsonl({
                 <p className="text-sm text-gray-500 mb-2">You can generate data using AI, enter your prompt below.</p>
                 {error && <p className="text-sm text-red-500 mb-2">{error}</p>}
                 {result ? <DataTable data={result} columns={columns} /> : 
+                <div className="flex flex-col gap-2">
+                <Input
+                  placeholder="Model"
+                  value={modelString}
+                  onChange={(e) => {
+                    setModelString(e.target.value);
+                  }}
+                />
                 <Textarea
                   rows={10}
                   cols={50}
@@ -107,7 +173,8 @@ export default function LoadJsonl({
                   onChange={(e) => {
                     setPrompt(e.target.value);
                   }}
-                />}
+                />
+                </div>}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -128,7 +195,9 @@ export default function LoadJsonl({
                 onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
+                  const model = client(modelString);
                   if (prompt) {
+                    try {
                     setIsLoading(true);
                     setError(null);
                     setResult(undefined);
@@ -142,6 +211,11 @@ export default function LoadJsonl({
                     setResult(object.data);
                     setIsLoading(false);
                     setError(null);
+                    } catch (err) {
+                      setError(err instanceof Error ? err.message : String(err));
+                    } finally {
+                      setIsLoading(false);
+                    }
                   } else {
                     setError("No prompt provided");
                   }
