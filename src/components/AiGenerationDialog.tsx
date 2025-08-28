@@ -84,7 +84,7 @@ export const AiGenerationDialog = ({ onAddData }: AiGenerationDialogProps) => {
         schema: z.object({
           data: JsonDataSchema,
         }),
-        system: "You are a synthetic data generator. You will be given a prompt and you will generate a list of messages. Generate " + pairCount + " pairs of messages.",
+        system: "You are a synthetic data generator. You will be given a prompt and you will generate a list of messages. Generate " + (pairCount ?? "a reasonable number of") + " pairs of messages.",
         prompt,
       });
       
