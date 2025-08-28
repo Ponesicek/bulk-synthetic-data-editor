@@ -153,7 +153,7 @@ function App() {
                 b: entries[bestJ].content,
               };
               if (bestSim > 0.9) {
-                toast.error("Highly similar pair found:\n" + JSON.stringify(result.a) + " and " + JSON.stringify(result.b));
+                toast.error("Highly similar pair found:\n" + JSON.stringify(result.a) + " and " + JSON.stringify(result.b) + "\nWith similarity: " + bestSim);
               } else {
                 toast.success("No similar pair found (biggest similarity: " + bestSim + ").");
               }

@@ -8,6 +8,8 @@ import {
   useReactTable,
   getPaginationRowModel,
   type PaginationState,
+  type ColumnFiltersState,
+  getFilteredRowModel,
 } from "@tanstack/react-table";
 
 import {
@@ -19,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -33,19 +36,32 @@ export function DataTable<TData, TValue>({
     pageIndex: 0,
     pageSize: 10,
   });
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
     data,
     columns,
-    state: { pagination },
+    state: { pagination, columnFilters },
     onPaginationChange: setPagination,
+    onColumnFiltersChange: setColumnFilters,
     getPaginationRowModel: getPaginationRowModel(),
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     autoResetPageIndex: false,
   });
 
   return (
     <div>
+    <div className="flex items-center gap-2 py-4">
+      <Input
+        placeholder="Filter user..."
+        value={(table.getColumn("user")?.getFilterValue() as string) ?? ""}
+        onChange={(event) =>
+          table.getColumn("user")?.setFilterValue(event.target.value)
+        }
+        className="max-w-sm"
+      />
+    </div>
     <div className="overflow-hidden rounded-md border">
       <Table>
         <TableHeader>

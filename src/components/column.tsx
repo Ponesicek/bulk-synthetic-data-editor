@@ -2,7 +2,7 @@
 import { JsonDataSchema } from "@/loadJsonl";
 import { type ColumnDef } from "@tanstack/react-table";
 import z from "zod";
-import { TrashIcon } from "lucide-react";
+import { XIcon } from "lucide-react";
 import { Button } from "./ui/button";
 
 type JsonDataItem = z.infer<typeof JsonDataSchema>[number];
@@ -20,13 +20,17 @@ export function getColumns(
       cell: ({ row }) => (
         <div className="flex items-center justify-center">
         <Button variant="ghost" size="icon" onClick={() => onDelete(row.index)}>
-          <TrashIcon />
+          <XIcon />
           </Button>
         </div>
       ),
     },
     {
       id: "user",
+      accessorFn: (row) => {
+        const msg = row.messages.find((m) => m.role === "user");
+        return msg ? msg.content : "";
+      },
       header: "User",
       cell: ({ row }) => {
         const messages = row.original.messages;
@@ -44,6 +48,10 @@ export function getColumns(
     },
     {
       id: "assistant",
+      accessorFn: (row) => {
+        const msg = row.messages.find((m) => m.role === "assistant");
+        return msg ? msg.content : "";
+      },
       header: "Assistant",
       cell: ({ row }) => {
         const messages = row.original.messages;
