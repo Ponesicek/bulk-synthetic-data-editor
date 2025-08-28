@@ -1,4 +1,5 @@
-import { openaiClient } from "./clients";
+import { gatewayClient } from "./clients";
+import { cosineSimilarity, embedMany } from "ai";
 import type { JsonDataType, SimilarityResult } from "../types";
 
 export const computeSimilarity = async (jsonlData: JsonDataType): Promise<SimilarityResult> => {
@@ -12,18 +13,14 @@ export const computeSimilarity = async (jsonlData: JsonDataType): Promise<Simila
   if (entries.length < 2) {
     throw new Error("Need at least two user messages to compare.");
   }
-
+  
   const inputs = entries.map((e) => e.content);
-  const response = await openaiClient.embeddings.create({
-    model: "text-embedding-nomic-embed-text-v1.5",
-    input: inputs,
-    encoding_format: "float",
+  const response = await embedMany({
+    model: gatewayClient.textEmbeddingModel("google/gemini-embedding-001"),
+    values: inputs,
   });
   
-  const embeddings = response.data.map((d) => d.embedding as number[]);
-  const norms = embeddings.map((vec) =>
-    Math.sqrt(vec.reduce((acc, v) => acc + v * v, 0))
-  );
+  const embeddings = response.embeddings;
 
   let bestI = 0;
   let bestJ = 1;
@@ -33,9 +30,7 @@ export const computeSimilarity = async (jsonlData: JsonDataType): Promise<Simila
     for (let j = i + 1; j < embeddings.length; j++) {
       const a = embeddings[i];
       const b = embeddings[j];
-      let dot = 0;
-      for (let k = 0; k < a.length; k++) dot += a[k] * b[k];
-      const sim = dot / (norms[i] * norms[j] || 1);
+      const sim = cosineSimilarity(a, b);
       if (sim > bestSim) {
         bestSim = sim;
         bestI = i;

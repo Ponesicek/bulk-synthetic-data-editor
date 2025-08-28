@@ -1,12 +1,9 @@
-import OpenAI from "openai";
 import { createGateway } from "@ai-sdk/gateway";
 
-export const openaiClient = new OpenAI({
-  baseURL: "http://localhost:1234/v1",
-  apiKey: "1234567890",
-  dangerouslyAllowBrowser: true
-});
-
 export const gatewayClient = createGateway({
+  baseURL: 
+    typeof window !== "undefined" && location.origin
+      ? "/api/gateway/v1/ai"
+      : "https://ai-gateway.vercel.sh/v1/ai",
   apiKey: import.meta.env.VITE_API_GATEWAY,
 });
