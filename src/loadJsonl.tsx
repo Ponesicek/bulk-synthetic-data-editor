@@ -12,7 +12,7 @@ import { Input } from "./components/ui/input";
 
 const client = createGateway(
   {
-    apiKey: "",
+    apiKey: import.meta.env.VITE_API_GATEWAY,
   }
 );
 export const JsonDataSchema = z.array(
