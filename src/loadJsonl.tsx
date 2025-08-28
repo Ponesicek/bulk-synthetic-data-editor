@@ -2,24 +2,23 @@ import z from "zod";
 import { useState } from "react";
 import { Button } from "./components/ui/button";
 import { Textarea } from "./components/ui/textarea";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-//{"messages": [{"role": "user", "content": "Hey there! How are you doing today?"}, {"role": "assistant", "content": "Oh! H-hi there... :3 I'm doing okay, I guess? Just been kinda quiet today, hehe... How are you? I hope you're having a better day than me... >.<"}]}
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogFooter, AlertDialogDescription, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./components/ui/alert-dialog";
+import { generateObject } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+
+const client = createOpenAI(
+  {
+    //baseURL: "http://localhost:1234/v1",
+    apiKey: "",
+  }
+);
+const model = client("gpt-4o-2024-08-06")
 export const JsonDataSchema = z.array(
   z.object({
     messages: z.array(
       z.object({
         role: z.enum(["user", "assistant"]),
-        content: z.string().min(2).max(1000),
+        content: z.string().min(2),
       }),
     ),
   }),
@@ -33,6 +32,7 @@ export default function LoadJsonl({
   setJsonl: (data: z.infer<typeof JsonDataSchema> | undefined) => void;
 }) {
   const [jsonData, setJsonData] = useState<string>();
+  const [prompt, setPrompt] = useState<string>();
   return (
     <div className="flex flex-col items-center justify-center">
       <Textarea
@@ -46,23 +46,44 @@ export default function LoadJsonl({
         value={jsonData}
       />
       <div className="flex flex-row gap-2 my-2 justify-between w-full">
+        <div className="flex flex-row gap-2">
+        <Button>Import from file</Button>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button>Clear All</Button>
+            <Button>Generate using AI</Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogTitle>Generate using AI</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete all
-                data.
+                <p className="text-sm text-gray-500 mb-2">You can generate data using AI, enter your prompt below.</p>
+                <Textarea
+                  rows={10}
+                  cols={50}
+                  wrap="off"
+                  placeholder="Enter your prompt here..."
+                  onChange={(e) => {
+                    setPrompt(e.target.value);
+                  }}
+                />
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => {
-                  setJsonl(undefined);
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (prompt) {
+                    const {object} = await generateObject({
+                      model,
+                      schema: z.object({
+                        data: JsonDataSchema,
+                      }),
+                      prompt,
+                    });
+                    console.log(JSON.stringify(object, null, 2));
+                  }
                 }}
               >
                 Continue
@@ -70,6 +91,8 @@ export default function LoadJsonl({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        </div>
         <Button
           onClick={() => {
             if (jsonData) {

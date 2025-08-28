@@ -2,6 +2,8 @@
 import { JsonDataSchema } from "@/loadJsonl";
 import { type ColumnDef } from "@tanstack/react-table";
 import z from "zod";
+import { TrashIcon } from "lucide-react";
+import { Button } from "./ui/button";
 
 type JsonDataItem = z.infer<typeof JsonDataSchema>[number];
 
@@ -9,8 +11,20 @@ type Role = "user" | "assistant";
 
 export function getColumns(
   onEdit: (rowIndex: number, role: Role, value: string) => void,
+  onDelete: (rowIndex: number) => void,
 ): ColumnDef<JsonDataItem>[] {
   return [
+    {
+      id: "select",
+      header: "",
+      cell: ({ row }) => (
+        <div className="flex items-center justify-center">
+        <Button variant="ghost" size="icon" onClick={() => onDelete(row.index)}>
+          <TrashIcon />
+          </Button>
+        </div>
+      ),
+    },
     {
       id: "user",
       header: "User",

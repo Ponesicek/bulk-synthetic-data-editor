@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "fastapi[standard]>=0.116.1",
     "langsmith>=0.4.20",
     "numpy>=2.2.6",
     "openai>=1.102.0",

@@ -1,6 +1,11 @@
-def main():
-    print("Hello from finetuneeditor!")
+import fastapi
 
+app = fastapi.FastAPI()
 
-if __name__ == "__main__":
-    main()
+@app.get("/")
+def read_root():
+    return {"message": "Hello, World!"}
+
+@app.get("/hello")
+def read_hello():
+    return {"message": "Hello, World!"}
