@@ -21,13 +21,19 @@ export const SimilarityChecker = ({ jsonlData }: SimilarityCheckerProps) => {
       const result = await computeSimilarity(jsonlData);
       if (result.similarity > 0.9) {
         toast.error(
-          "Highly similar pair found:\n" + 
-          JSON.stringify(result.a) + " and " + 
-          JSON.stringify(result.b) + 
-          "\nWith similarity: " + result.similarity
+          "Highly similar pair found:\n" +
+            JSON.stringify(result.a) +
+            " and " +
+            JSON.stringify(result.b) +
+            "\nWith similarity: " +
+            result.similarity,
         );
       } else {
-        toast.success("No similar pair found (biggest similarity: " + result.similarity + ").");
+        toast.success(
+          "No similar pair found (biggest similarity: " +
+            result.similarity +
+            ").",
+        );
       }
     } catch (err) {
       console.error(err);

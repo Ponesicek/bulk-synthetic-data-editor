@@ -21,9 +21,5 @@ export const DataExporter = ({ jsonlData }: DataExporterProps) => {
     }
   };
 
-  return (
-    <Button onClick={handleExport}>
-      Download
-    </Button>
-  );
+  return <Button onClick={handleExport}>Download</Button>;
 };

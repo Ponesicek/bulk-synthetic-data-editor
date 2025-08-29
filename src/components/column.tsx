@@ -19,8 +19,12 @@ export function getColumns(
       header: "",
       cell: ({ row }) => (
         <div className="flex items-center justify-center">
-        <Button variant="ghost" size="icon" onClick={() => onDelete(row.index)}>
-          <XIcon />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onDelete(row.index)}
+          >
+            <XIcon />
           </Button>
         </div>
       ),

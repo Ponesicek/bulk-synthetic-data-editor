@@ -2,7 +2,9 @@ import { gatewayClient } from "./clients";
 import { cosineSimilarity, embedMany } from "ai";
 import type { JsonDataType, SimilarityResult } from "../types";
 
-export const computeSimilarity = async (jsonlData: JsonDataType): Promise<SimilarityResult> => {
+export const computeSimilarity = async (
+  jsonlData: JsonDataType,
+): Promise<SimilarityResult> => {
   const entries = (jsonlData ?? [])
     .map((item, idx) => ({
       idx,
@@ -13,13 +15,13 @@ export const computeSimilarity = async (jsonlData: JsonDataType): Promise<Simila
   if (entries.length < 2) {
     throw new Error("Need at least two user messages to compare.");
   }
-  
+
   const inputs = entries.map((e) => e.content);
   const response = await embedMany({
     model: gatewayClient.textEmbeddingModel("google/gemini-embedding-001"),
     values: inputs,
   });
-  
+
   const embeddings = response.embeddings;
 
   let bestI = 0;

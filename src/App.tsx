@@ -22,14 +22,16 @@ import { DataExporter } from "./components/DataExporter";
 function App() {
   const { jsonlData, onEdit, onDelete, clearAll, addData } = useJsonlData();
 
-  const columns = useMemo(() => getColumns(onEdit, onDelete), [onEdit, onDelete]);
+  const columns = useMemo(
+    () => getColumns(onEdit, onDelete),
+    [onEdit, onDelete],
+  );
 
   return (
     <div className="mx-auto flex flex-col pt-1">
-      <h1 className="text-2xl font-bold">Welcome to Synthetic Data Bulk Editor</h1>
-      <p className="mt-4 text-lg mb-2">
-        Your go-to solution for synthetic data bulk editing.
-      </p>
+      <h1 className="text-2xl mb-4 font-bold">
+        Bulk Synthetic Data Editor
+      </h1>
       <LoadJsonl onAddData={addData} />
       {jsonlData && <DataTable columns={columns} data={jsonlData} />}
       <div className="flex flex-row gap-2 justify-between mt-4">
@@ -47,9 +49,7 @@ function App() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={clearAll}>
-                Continue
-              </AlertDialogAction>
+              <AlertDialogAction onClick={clearAll}>Continue</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

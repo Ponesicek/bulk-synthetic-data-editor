@@ -2,12 +2,14 @@ import z from "zod";
 
 export const JsonDataSchema = z.array(
   z.object({
-    messages: z.array(
-      z.object({
-        role: z.enum(["user", "assistant"]),
-        content: z.string().min(2),
-      }),
-    ).max(2),
+    messages: z
+      .array(
+        z.object({
+          role: z.enum(["user", "assistant"]),
+          content: z.string().min(2),
+        }),
+      )
+      .max(2),
   }),
 );
 

@@ -25,17 +25,14 @@ export const useJsonlData = () => {
     [],
   );
 
-  const onDelete: DeleteHandler = useCallback(
-    (rowIndex: number) => {
-      setJsonlData((prev) => {
-        if (!prev) return prev;
-        const next = [...prev];
-        next.splice(rowIndex, 1);
-        return next;
-      });
-    },
-    [],
-  );
+  const onDelete: DeleteHandler = useCallback((rowIndex: number) => {
+    setJsonlData((prev) => {
+      if (!prev) return prev;
+      const next = [...prev];
+      next.splice(rowIndex, 1);
+      return next;
+    });
+  }, []);
 
   const clearAll = useCallback(() => {
     setJsonlData(undefined);

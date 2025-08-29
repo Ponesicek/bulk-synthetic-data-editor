@@ -1,7 +1,7 @@
 export const parseFileContentToArray = (text: string) => {
   const trimmed = text.trim();
   if (!trimmed) return [] as unknown[];
-  
+
   try {
     if (trimmed.startsWith("[")) {
       const parsed = JSON.parse(trimmed);
@@ -10,7 +10,7 @@ export const parseFileContentToArray = (text: string) => {
   } catch {
     // fall through to JSONL parsing
   }
-  
+
   return trimmed
     .split("\n")
     .map((line) => line.trim())

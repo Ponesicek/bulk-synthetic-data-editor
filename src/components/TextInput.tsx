@@ -41,9 +41,7 @@ export const TextInput = ({ onAddData }: TextInputProps) => {
           <FileOperations onAddData={onAddData} />
           <AiGenerationDialog onAddData={onAddData} />
         </div>
-        <Button onClick={handleAddData}>
-          Add Data
-        </Button>
+        <Button onClick={handleAddData}>Add Data</Button>
       </div>
     </div>
   );

@@ -53,19 +53,19 @@ export const AiGenerationDialog = ({ onAddData }: AiGenerationDialogProps) => {
     [],
   );
 
-  const onDelete = useCallback(
-    (rowIndex: number) => {
-      setResult((prev) => {
-        if (!prev) return prev;
-        const next = [...prev];
-        next.splice(rowIndex, 1);
-        return next;
-      });
-    },
-    [],
-  );
+  const onDelete = useCallback((rowIndex: number) => {
+    setResult((prev) => {
+      if (!prev) return prev;
+      const next = [...prev];
+      next.splice(rowIndex, 1);
+      return next;
+    });
+  }, []);
 
-  const columns = useMemo(() => getColumns(onEdit, onDelete), [onEdit, onDelete]);
+  const columns = useMemo(
+    () => getColumns(onEdit, onDelete),
+    [onEdit, onDelete],
+  );
 
   const handleGenerate = async () => {
     if (!prompt) {
@@ -77,17 +77,20 @@ export const AiGenerationDialog = ({ onAddData }: AiGenerationDialogProps) => {
       setIsLoading(true);
       setError(null);
       setResult(undefined);
-      
+
       const model = gatewayClient(modelString);
       const { object } = await generateObject({
         model,
         schema: z.object({
           data: JsonDataSchema,
         }),
-        system: "You are a synthetic data generator. You will be given a prompt and you will generate a list of messages. Generate " + (pairCount ?? "a reasonable number of") + " pairs of messages.",
+        system:
+          "You are a synthetic data generator. You will be given a prompt and you will generate a list of messages. Generate " +
+          (pairCount ?? "a reasonable number of") +
+          " pairs of messages.",
         prompt,
       });
-      
+
       setResult(object.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -163,10 +166,12 @@ export const AiGenerationDialog = ({ onAddData }: AiGenerationDialogProps) => {
           ) : isLoading ? (
             <AlertDialogAction disabled>Generating...</AlertDialogAction>
           ) : (
-            <AlertDialogAction onClick={(e) => {
-              e.preventDefault();
-              handleGenerate();
-            }}>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleGenerate();
+              }}
+            >
               Generate
             </AlertDialogAction>
           )}
